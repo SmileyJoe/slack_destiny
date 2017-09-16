@@ -18,30 +18,37 @@ messageFormat = FORMAT_COMPACT
 
 for key, value in DESTINY_USERS.items():
     profile = destiny.get_profile(value)
-    characters = profile["Response"]["characters"]["data"]
-    characterIds = profile["Response"]["profile"]["data"]["characterIds"]
-    seconds = 0
-    maxLight = 0
 
-    for characterId in characterIds:
-        character = characters[characterId]
-        seconds += int(character["minutesPlayedTotal"])*60
-        light = int(character["light"])
+    if "Response" in profile:
+        characters = profile["Response"]["characters"]["data"]
+        characterIds = profile["Response"]["profile"]["data"]["characterIds"]
+        seconds = 0
+        maxLight = 0
 
-        if light > maxLight:
-            maxLight = light
+        for characterId in characterIds:
+            character = characters[characterId]
+            seconds += int(character["minutesPlayedTotal"])*60
+            light = int(character["light"])
 
-    if seconds > 0:
-        hours = seconds/60/60
-        elapsed = Time.elapsed(seconds)
+            if light > maxLight:
+                maxLight = light
 
-        if messageFormat == FORMAT_COMPACT:
-            message = "\n*{}:* {} hours ({})".format(key, hours, elapsed)
+        if seconds > 0:
+            pprint(key)
+            hours = seconds/60/60
+            elapsed = Time.elapsed(seconds)
+
+            if messageFormat == FORMAT_COMPACT:
+                message = "\n*{}:* {} hours ({})".format(key, hours, elapsed)
+            else:
+                message = "\n\n*{}*\nTime: {} hours ({})\nMax Light: {}".format(key, hours, elapsed, maxLight)
+
+            valueTuple = (key, seconds, message)
+            users.append(valueTuple)
         else:
-            message = "\n\n*{}*\nTime: {} hours ({})\nMax Light: {}".format(key, hours, elapsed, maxLight)
-
-        valueTuple = (key, hours, message)
-        users.append(valueTuple)
+            pprint(key + " no time")
+    else:
+        pprint(key + " not found")
 
 users.sort(key=lambda tup: tup[1], reverse=True)
 
